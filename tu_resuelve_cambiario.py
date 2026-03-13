@@ -141,7 +141,7 @@ if st.button("🤑 Calcular Decisión Óptima 🤑", use_container_width=True):
 
 # --- SECCIÓN DE CONTACTO Y PROPINAS MODIFICADA ---
 st.divider()
-with st.expander("💡 Deja una sugerencia o apoya este proyecto"):
+with st.expander("💡 Deja una sugerencia y/o apoya este proyecto"):
     # 1. Dudas y Sugerencias primero
     st.markdown("✉️ **Dudas y Sugerencias**")
     st.markdown("Escríbeme a: [turesuelvecambiario@yopmail.com](mailto:turesuelvecambiario@yopmail.com)")
@@ -165,5 +165,6 @@ with st.expander("⚖️ Aviso Legal y Privacidad"):
     * El usuario es el único responsable de sus decisiones de pago y negociaciones con terceros.
     * Los colaboradores de esta página no garantizan la precisión, exactitud, vigencia o disponibilidad continua de estos datos y se eximen de cualquier responsabilidad por errores u omisiones en la información mostrada, así como de interrupciones en el servicio.
         """)
+
 
 st.caption("Desarrollado para análisis económico personal. Tu Resuelve Cambiario.")
