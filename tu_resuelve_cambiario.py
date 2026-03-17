@@ -7,22 +7,33 @@ st.set_page_config(page_title="Tu Resuelve Cambiario", page_icon="💱", layout=
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def get_bcv_rate(currency_id):
-    # Buscamos explícitamente según la moneda seleccionada
-    if currency_id == "dolar":
-        url = "https://ve.dolarapi.com/v1/dolares/oficial"
-    elif currency_id == "euro":
-        url = "https://ve.dolarapi.com/v1/euros/oficial"
-    else:
-        return None
-        
+    """Extrae la tasa del dólar desde la web del BCV; si falla, solicita ingreso manual"""
+    url = "https://www.bcv.org.ve/"
+    headers = {'User-Agent': 'Mozilla/5.0'}
+    
     try:
-        response = requests.get(url, verify=False, timeout=5)
-        if response.status_code == 200:
-            data = response.json()
-            return float(data["promedio"])
-        return None
-    except:
-        return None
+        # Intenta el scraping
+        response = requests.get(url, headers=headers, verify=False, timeout=5)
+        tree = html.fromstring(response.content)
+        xpath_dolar = '//div[@id="dolar"]//strong/text()'
+        rate = tree.xpath(xpath_dolar)
+        
+        if not rate:
+            raise ValueError
+        
+        return float(rate[0].replace(',', '.').strip())
+        
+    except Exception:
+        # Si falla el scraping o la conexión, ingresar el valor manualmente
+        print("\n[!] No se pudo conectar con el BCV o el formato de la página cambió.")
+        while True:
+            try:
+                manual_rate = float(input("Por favor, ingresa la tasa BCV oficial manualmente: "))
+                if manual_rate > 0:
+                    return manual_rate
+                print("La tasa debe ser mayor a cero.")
+            except ValueError:
+                print("Entrada inválida. Ingresa un número (Formato: XX.XX).")
 
 def formato_vzla(monto):
     """Formatea con punto para miles y coma para decimales"""
