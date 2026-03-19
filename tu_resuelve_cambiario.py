@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+from lxml import html
 import urllib3
 
 # Configuración de la página (layout="wide" para aprovechar la pantalla completa)
@@ -7,21 +8,39 @@ st.set_page_config(page_title="Tu Resuelve Cambiario", page_icon="💱", layout=
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def get_bcv_rate(currency_id):
-    # Buscamos explícitamente según la moneda seleccionada
+    url = "https://www.bcv.org.ve/"
+    
+    # ¡Tus XPaths cortos y blindados!
     if currency_id == "dolar":
-        url = "https://ve.dolarapi.com/v1/dolares/oficial"
+        xpath_usar = '//div[@id="dolar"]//strong/text()'
     elif currency_id == "euro":
-        url = "https://ve.dolarapi.com/v1/euros/oficial"
+        xpath_usar = '//div[@id="euro"]//strong/text()'
     else:
         return None
         
+    # Cabeceras para simular que somos un navegador real y evitar bloqueos del BCV
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
+        
     try:
-        response = requests.get(url, verify=False, timeout=5)
+        response = requests.get(url, headers=headers, verify=False, timeout=10)
+        
         if response.status_code == 200:
-            data = response.json()
-            return float(data["promedio"])
+            tree = html.fromstring(response.content)
+            elementos = tree.xpath(xpath_usar)
+            
+            if elementos:
+                # Como el XPath termina en /text(), 'elementos[0]' ya es directamente el texto (" 36,25 ")
+                texto_crudo = elementos[0].strip() 
+                
+                # Reemplazamos la coma por punto
+                numero_limpio = texto_crudo.replace(",", ".")
+                
+                return float(numero_limpio)
+        
         return None
-    except:
+    except Exception as e:
         return None
 
 def formato_vzla(monto):
