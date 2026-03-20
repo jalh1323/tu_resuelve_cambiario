@@ -97,12 +97,13 @@ st.divider()
 # SECCIÓN DE COMPRA
 st.subheader("Datos de la Compra")
 
-tipo_precio = st.radio("¿Cómo ingresarás el precio base del producto?", 
-                      ["En Dólares ($)", "En Bolívares (Bs.)"], horizontal=True)
-
 col1, col2 = st.columns(2)
 
 with col1:
+    # Metemos la selección de base adentro de la columna para que quede alineada
+    tipo_precio = st.radio("¿Cómo ingresarás el precio base del producto?", 
+                           ["En Dólares ($)", "En Bolívares (Bs.)"], horizontal=True)
+
     if tipo_precio == "En Dólares ($)":
         precio_ref_usd = st.number_input(
             "Precio del producto ($ BCV)", 
@@ -125,14 +126,34 @@ with col1:
         st.caption(f"Equivalente a tasa BCV: **$ {formato_vzla(precio_ref_usd)}**")
 
 with col2:
-    monto_efectivo_pedido = st.number_input(
-        "Oferta si pagas en efectivo ($)", 
-        min_value=0.0, 
-        value=0.0, 
-        step=1.0, 
-        format="%.2f"
-    )
-    st.caption(f"Valor: **$ {formato_vzla(monto_efectivo_pedido)}**")
+    # Agregamos la opción de descuento perfectamente alineada con la columna 1
+    tipo_oferta = st.radio("¿Cómo te dieron la oferta en efectivo?", 
+                           ["Monto directo", "Porcentaje (%)"], horizontal=True)
+    
+    if tipo_oferta == "Monto directo":
+        monto_efectivo_pedido = st.number_input(
+            "Oferta si pagas en efectivo ($)", 
+            min_value=0.0, 
+            value=0.0, 
+            step=1.0, 
+            format="%.2f"
+        )
+    else:
+        descuento_pct = st.number_input(
+            "Porcentaje de descuento (%)", 
+            min_value=0.0, 
+            max_value=100.0, 
+            value=0.0, 
+            step=1.0, 
+            format="%.2f"
+        )
+        # Calculamos el monto restando el porcentaje al precio base
+        monto_efectivo_pedido = precio_ref_usd - (precio_ref_usd * (descuento_pct / 100))
+        
+        # APLICAMOS EL FORMATO VZLA AL PORCENTAJE PARA QUE MUESTRE LA COMA
+        st.info(f"Descuento de **{formato_vzla(descuento_pct)}%** aplicado.")
+
+    st.caption(f"Monto final a pagar en efectivo: **$ {formato_vzla(monto_efectivo_pedido)}**")
 
 if st.button("🤑 Calcular Decisión Óptima 🤑", use_container_width=True):
     costo_en_bs_pagando_efectivo = monto_efectivo_pedido * tasa_mercado
@@ -184,6 +205,5 @@ with st.expander("⚖️ Aviso Legal y Privacidad"):
     * El usuario es el único responsable de sus decisiones de pago y negociaciones con terceros.
     * Los colaboradores de esta página no garantizan la precisión, exactitud, vigencia o disponibilidad continua de estos datos y se eximen de cualquier responsabilidad por errores u omisiones en la información mostrada, así como de interrupciones en el servicio.
         """)
-
 
 st.caption("Desarrollado para análisis económico personal. Tu Resuelve Cambiario.")
